@@ -1,5 +1,6 @@
 <script lang="ts">
-  import Greet from './lib/Greet.svelte'
+  import { getListFromAPI, ItemType  } from "./fetchAuthors";
+  getListFromAPI(ItemType.Works).then(console.log);
 </script>
 
 
