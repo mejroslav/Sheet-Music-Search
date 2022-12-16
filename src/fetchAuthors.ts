@@ -1,4 +1,5 @@
 import { Response, fetch, ResponseType } from "@tauri-apps/api/http"
+import type { Readable } from "svelte/store"
 
 export enum ItemType {
     Authors = 1,
@@ -24,6 +25,11 @@ interface Work {
         pageid: string
     },
     permlink: string
+}
+
+interface PromiseWithProgress<T>{
+    promise: Promise<T>,
+    progress: Readable<number>
 }
 
 type Item<T extends ItemType> =
