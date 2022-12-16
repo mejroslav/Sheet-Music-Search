@@ -78,18 +78,14 @@ async function fetchPageRetrying<T extends ItemType>(
 const delay = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
 export function getListFromAPI<T extends ItemType>(t: T) {
-
-  return new PromiseWithProgress<Item<T>[]>(async (res, up) => {
+  return new PromiseWithProgress<Item<T>[]>(async (res, { setRatio }) => {
     let items: Item<T>[] = [];
 
     let n = 0;
-    let numOfPages = t === ItemType.Works ? 220 : 45 ; // počet stránek ve vyhledávání všech děl, resp. autorů
+    let numOfPages = t === ItemType.Works ? 220 : 45; // počet stránek ve vyhledávání všech děl, resp. autorů
 
     while (true) {
-      //console.log(`Fetching page ${n}`);
-      // if (n > 0 && n % 10 === 0) console.log(items);
-
-      up(Progress.fromRatio(n/numOfPages))
+      setRatio(n / numOfPages);
 
       const response = await fetchPageRetrying(t, n++);
       for (let i = 0; response.data[i] !== undefined; i++) {

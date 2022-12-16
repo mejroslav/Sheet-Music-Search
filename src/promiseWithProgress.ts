@@ -15,19 +15,38 @@ export class Progress {
     get percent(): number { return this.value * 100; }
 }
 
-export class PromiseWithProgress<T> {
-    promise: Promise<T>;
-    progress: Readable<Progress>;
+interface ProgressUpdater {
+    setRatio(r: number);
+    setPercent(p: number);
+}
+
+export class PromiseWithProgress<T> implements Promise<T>, Readable<Progress> {
+    then: Promise<T>["then"];
+    catch: Promise<T>["catch"];
+    finally: Promise<T>["finally"];
+
+    subscribe: Readable<Progress>["subscribe"];
+
+    [Symbol.toStringTag] = "Promise With Progress";
 
     constructor(
         executor: (
             resolve: (value: T) => void,
-            updateProgress: (progress: Progress) => void,
+            updateProgress: ProgressUpdater,
             reject: (error: any) => void,
         ) => void
     ) {
         const progress = writable(Progress.fromRatio(0));
-        const promise = new Promise<T>((res, rej) => executor(res, progress.set, rej));
-        return { progress, promise };
+        const updater: ProgressUpdater = {
+            setRatio(r) { progress.set(Progress.fromRatio(r)); },
+            setPercent(p) { progress.set(Progress.fromPercent(p)); },
+        };
+        const promise = new Promise<T>((res, rej) => executor(res, updater, rej));
+        
+        this.then = promise.then;
+        this.catch = promise.catch;
+        this.finally = promise.finally;
+
+        this.subscribe = progress.subscribe;
     }
 }
