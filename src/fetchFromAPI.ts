@@ -27,7 +27,7 @@ interface Work {
   permlink: string;
 }
 
-type Item<T extends ItemType> = T extends ItemType.Authors
+export type Item<T extends ItemType> = T extends ItemType.Authors
   ? Author
   : T extends ItemType.Works
   ? Work
