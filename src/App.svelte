@@ -1,15 +1,10 @@
 <script lang="ts">
   import { ItemType } from "./fetchFromAPI";
   import { getList } from "./fetchFromCache";
+  import { createDatabase } from "./SQLdatabase";
   let loadingAuthors = getList(ItemType.Authors);
 
-  import initSqlJs from "sql.js";
-
-  initSqlJs({
-    // Required to load the wasm binary asynchronously. Of course, you can host it wherever you want
-    // You can omit locateFile completely when running in node
-    locateFile: (file) => `https://sql.js.org/dist/${file}`,
-  }).then((SQL) => ((window as any).SQL = SQL));
+  createDatabase().then((db) => ((window as any).db = db));
 </script>
 
 <main id="bookshelf">

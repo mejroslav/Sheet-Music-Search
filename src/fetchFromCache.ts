@@ -1,5 +1,6 @@
 import { getListFromAPI, ItemType, type Item } from "./fetchFromAPI";
 import { PromiseWithProgress } from "./promiseWithProgress";
+import { saveToDatabase } from "./SQLdatabase";
 
 const CACHE_KEY_AUTHORS = "CACHE_KEY_AUTHORS";
 const CACHE_KEY_WORKS = "CACHE_KEY_WORKS";
@@ -21,9 +22,7 @@ export function getList<T extends ItemType>(
     );
   } else {
     let listPromise = getListFromAPI(t);
-    listPromise.then((list) =>
-      localStorage.setItem(key, JSON.stringify(list))
-    );
+    listPromise.then((list) => saveToDatabase(t, list));
     return listPromise;
   }
 }
