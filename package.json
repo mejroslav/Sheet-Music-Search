@@ -12,8 +12,8 @@
   },
   "dependencies": {
     "@tauri-apps/api": "^1.2.0",
-    "@types/pako": "^2.0.0",
-    "pako": "^2.1.0"
+    "@types/sql.js": "^1.4.4",
+    "sql.js": "^1.8.0"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^2.0.0",
