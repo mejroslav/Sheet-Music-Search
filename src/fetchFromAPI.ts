@@ -6,7 +6,7 @@ export enum ItemType {
   Works = 2,
 }
 
-interface Author {
+export interface Author {
   id: string;
   type: "1";
   parent: string;
@@ -14,7 +14,7 @@ interface Author {
   permlink: string;
 }
 
-interface Work {
+export interface Work {
   id: string;
   type: "2";
   parent: string;
