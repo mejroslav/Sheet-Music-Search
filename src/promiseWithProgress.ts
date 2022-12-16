@@ -37,16 +37,14 @@ export class PromiseWithProgress<T> implements Promise<T>, Readable<Progress> {
         ) => void
     ) {
         const progress = writable(Progress.fromRatio(0));
+        const { subscribe } = progress;
         const updater: ProgressUpdater = {
             setRatio(r) { progress.set(Progress.fromRatio(r)); },
             setPercent(p) { progress.set(Progress.fromPercent(p)); },
         };
+
         const promise = new Promise<T>((res, rej) => executor(res, updater, rej));
         
-        this.then = promise.then;
-        this.catch = promise.catch;
-        this.finally = promise.finally;
-
-        this.subscribe = progress.subscribe;
+        return Object.assign(promise, { subscribe });
     }
 }

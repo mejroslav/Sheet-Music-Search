@@ -1,15 +1,15 @@
 <script lang="ts">
   import { getListFromAPI, ItemType  } from "./fetchAuthors";
   import { Progress, PromiseWithProgress } from "./promiseWithProgress";
-  let loadingProgress = getListFromAPI(ItemType.Authors);
+  let p = getListFromAPI(ItemType.Authors);
 </script>
 
 
 <main id="bookshelf">
     <h1>Inteligentní procházení knihovnou IMSLP</h1>
 	
-	{#await loadingProgress}
-		Loading: {$loadingProgress.percent.toFixed(0)} %
+	{#await p}
+		Loading: {$p.percent.toFixed(0)} %
 	{:then listOfWorks} 
 		první položka: {JSON.stringify(listOfWorks[0])}
 	{/await}
