@@ -1,50 +1,76 @@
 import { writable, type Readable } from "svelte/store";
 
+const clamp = (lowerBound: number, n: number, upperBound: number) =>
+  Math.max(lowerBound, Math.min(n, upperBound));
+
 export class Progress {
-    private constructor(private value: number) {};
+  private constructor(private value: number) {
+    this.value = clamp(0, value, 1);
+  }
 
-    static fromPercent(percent: number): Progress {
-        return new Progress(percent / 100);
-    }
+  static fromPercent(percent: number): Progress {
+    return new Progress(percent / 100);
+  }
 
-    static fromRatio(ratio: number): Progress {
-        return new Progress(ratio);
-    }
+  static fromRatio(ratio: number): Progress {
+    return new Progress(ratio);
+  }
 
-    get ratio(): number { return this.value; }
-    get percent(): number { return this.value * 100; }
+  get ratio(): number {
+    return this.value;
+  }
+  get percent(): number {
+    return this.value * 100;
+  }
 }
 
 interface ProgressUpdater {
-    setRatio(r: number);
-    setPercent(p: number);
+  setRatio(r: number);
+  setPercent(p: number);
 }
 
 export class PromiseWithProgress<T> implements Promise<T>, Readable<Progress> {
-    then: Promise<T>["then"];
-    catch: Promise<T>["catch"];
-    finally: Promise<T>["finally"];
+  then: Promise<T>["then"];
+  catch: Promise<T>["catch"];
+  finally: Promise<T>["finally"];
+  [Symbol.toStringTag]: string;
 
-    subscribe: Readable<Progress>["subscribe"];
+  subscribe: Readable<Progress>["subscribe"];
 
-    [Symbol.toStringTag] = "Promise With Progress";
+  constructor(
+    executor: (
+      resolve: (value: T) => void,
+      updateProgress: ProgressUpdater,
+      reject: (error: any) => void
+    ) => void
+  ) {
+    let promiseFulfilled = false;
 
-    constructor(
-        executor: (
-            resolve: (value: T) => void,
-            updateProgress: ProgressUpdater,
-            reject: (error: any) => void,
-        ) => void
-    ) {
-        const progress = writable(Progress.fromRatio(0));
-        const { subscribe } = progress;
-        const updater: ProgressUpdater = {
-            setRatio(r) { progress.set(Progress.fromRatio(r)); },
-            setPercent(p) { progress.set(Progress.fromPercent(p)); },
-        };
+    // Progress
+    const progress = writable(Progress.fromRatio(0));
+    const updater: ProgressUpdater = {
+      setRatio(r) {
+        if (promiseFulfilled) return;
+        progress.set(Progress.fromRatio(r));
+      },
+      setPercent(p) {
+        if (promiseFulfilled) return;
+        progress.set(Progress.fromPercent(p));
+      },
+    };
 
-        const promise = new Promise<T>((res, rej) => executor(res, updater, rej));
-        
-        return Object.assign(promise, { subscribe });
-    }
+    // Promise
+    const promise = new Promise<T>((res, rej) => {
+      function resolve(v: T) {
+        // set progress as 100% done
+        updater.setRatio(1);
+        res(v);
+      }
+
+      executor(resolve, updater, rej);
+    });
+
+    const { subscribe } = progress;
+    return Object.assign(promise, { subscribe });
+  }
 }
