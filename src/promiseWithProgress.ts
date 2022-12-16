@@ -25,17 +25,17 @@ export class Progress {
 }
 
 interface ProgressUpdater {
-  setRatio(r: number);
-  setPercent(p: number);
+  setRatio(r: number): void;
+  setPercent(p: number): void;
 }
 
 export class PromiseWithProgress<T> implements Promise<T>, Readable<Progress> {
-  then: Promise<T>["then"];
-  catch: Promise<T>["catch"];
-  finally: Promise<T>["finally"];
-  [Symbol.toStringTag]: string;
+  then!: Promise<T>["then"];
+  catch!: Promise<T>["catch"];
+  finally!: Promise<T>["finally"];
+  [Symbol.toStringTag]!: string;
 
-  subscribe: Readable<Progress>["subscribe"];
+  subscribe!: Readable<Progress>["subscribe"];
 
   constructor(
     executor: (

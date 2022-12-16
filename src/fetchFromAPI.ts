@@ -43,7 +43,7 @@ interface Metadata {
   apiversion: number;
 }
 
-type Result<T extends ItemType> = Item<T> & {
+type Result<T extends ItemType> = Record<number, Item<T>> & {
   metadata: Metadata;
 };
 
