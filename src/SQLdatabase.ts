@@ -116,4 +116,5 @@ export async function saveToDatabase<T extends ItemType>(
   console.log("Committing to disk...");
   const path = await getPath();
   await writeBinaryFile(path, db.export());
+  console.log("Written to the disk, path: ", path);
 }
