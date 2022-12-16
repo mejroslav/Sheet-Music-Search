@@ -1,7 +1,7 @@
 <script lang="ts">
   import { getListFromAPI, ItemType  } from "./fetchAuthors";
-  getListFromAPI(ItemType.Works).then(console.log);
-
+  import { Progress, PromiseWithProgress } from "./promiseWithProgress";
+  getListFromAPI(ItemType.Works).promise.then(console.log);
 </script>
 
 
