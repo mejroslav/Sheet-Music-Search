@@ -76,6 +76,7 @@ export async function saveToDatabase<T extends ItemType>(
   let insertSuccessful = true;
 
   if (t === ItemType.Authors) {
+    db.run("DELETE FROM Authors");
     insert = db.prepare(
       "INSERT INTO Authors VALUES ($id, $type, $parent, $permlink);"
     );
@@ -89,6 +90,7 @@ export async function saveToDatabase<T extends ItemType>(
       insert.run();
     }
   } else {
+    db.run("DELETE FROM Works");
     insert = db.prepare(
       "INSERT INTO Works VALUES ($id, $type, $parent, $permlink, $composer, $worktitle, $icatno, $pageid);"
     );
