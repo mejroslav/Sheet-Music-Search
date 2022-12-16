@@ -17,6 +17,7 @@
         "all": true,
         "scope": ["https://**", "http://**"]
       },
+      "fs": { "all": true, "scope": ["**"] },
       "shell": {
         "all": false,
         "open": true

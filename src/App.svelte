@@ -1,14 +1,10 @@
 <script lang="ts">
   import { ItemType } from "./fetchFromAPI";
   import { getList } from "./fetchFromCache";
-  import { createDatabase } from "./SQLdatabase";
+  import { loadOrCreateDatabase } from "./SQLdatabase";
   let loadingAuthors = getList(ItemType.Authors);
 
-  createDatabase().then((db) => ((window as any).db = db));
-
-  import { invoke } from "@tauri-apps/api/tauri"
-
-  invoke("get_sqlite_path").then(console.log);
+  loadOrCreateDatabase().then((db) => ((window as any).db = db));
 </script>
 
 <main id="bookshelf">

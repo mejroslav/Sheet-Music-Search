@@ -1,14 +1,40 @@
 import initSqlJs, { type Database, type Statement } from "sql.js";
 import { ItemType, type Author, type Item, type Work } from "./fetchFromAPI";
+import { invoke } from "@tauri-apps/api/tauri";
+import { createDir, exists, readBinaryFile, writeBinaryFile } from "@tauri-apps/api/fs";
 
-let database: Database | null;
+const dirname = (path: string) => path.substring(0, path.lastIndexOf("/"));
 
-export async function createDatabase() {
-  console.log("Creating an SQLite database...");
+let _path: string | undefined;
+async function getPath(): Promise<string> {
+  if (!_path) {
+    _path = await invoke<string>("get_sqlite_path");
+
+    // make sure the directory exists
+    const dir = dirname(await getPath());
+    await createDir(dir, { recursive: true });
+  }
+
+  return _path;
+}
+
+let _SQL: initSqlJs.SqlJsStatic | null;
+export async function getSQL() {
+  if (_SQL) return _SQL;
+
+  console.log("Initializing SQLite...");
   const SQL = await initSqlJs({
     locateFile: (file) => `https://sql.js.org/dist/${file}`,
   });
 
+  return (_SQL = SQL);
+}
+
+let _database: Database | null;
+export async function createDatabase(): Promise<Database> {
+  const SQL = await getSQL();
+
+  console.log("Creating a new database...");
   const db = new SQL.Database();
   db.run(
     "CREATE TABLE Authors (id text, type int, parent text, permlink text);"
@@ -17,15 +43,34 @@ export async function createDatabase() {
     "CREATE TABLE Works (id text, type int, parent text, permlink text, composer text, worktitle text, icatno text, pageid int);"
   );
 
-  console.log("Database created!");
-  return (database = db);
+  console.log("Database created! Writing it to disk...");
+  const path = await getPath();
+  await writeBinaryFile(path, db.export());
+  console.log("Written to the disk, path: ", path);
+
+  return (_database = db);
+}
+
+export async function loadOrCreateDatabase() {
+  if (_database) return _database;
+  const path = await getPath();
+
+  if (await exists(path)) {
+    console.log("Database exists! Attempting to load it...")
+    const blob = await readBinaryFile(path);
+    const SQL = await getSQL();
+    return (_database = new SQL.Database(blob));
+  }
+
+  return await createDatabase();
 }
 
 export async function saveToDatabase<T extends ItemType>(
   t: T,
   items: Item<T>[]
 ) {
-  const db = database ?? (await createDatabase());
+  console.log("Saving to the database...");
+  const db = _database ?? (await createDatabase());
 
   let insert: Statement;
   let insertSuccessful = true;
@@ -67,4 +112,8 @@ export async function saveToDatabase<T extends ItemType>(
   if (!insertSuccessful) {
     throw new Error("nelze přidat do databáze");
   }
+
+  console.log("Committing to disk...");
+  const path = await getPath();
+  await writeBinaryFile(path, db.export());
 }
