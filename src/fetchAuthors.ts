@@ -53,6 +53,7 @@ const fetchPage = <T extends ItemType>(t: T, n: number) => fetch<Result<T>>(urlO
     method: "GET",
     responseType: ResponseType.JSON
 });
+
 async function fetchPageRetrying<T extends ItemType>(t: T, n: number, maxRetries: number = 3): Promise<Response<Result<T>>> {
     try {
         return await fetchPage(t, n);
@@ -71,8 +72,8 @@ export async function getListFromAPI<T extends ItemType>(t: T): Promise<Item<T>[
 
     let n = 0;
     while (true) {
-        console.log("Fetching page ", n);
-        if (n > 0 && n % 10 === 0) console.log(items);
+        console.log(`Fetching page ${n}`);
+        // if (n > 0 && n % 10 === 0) console.log(items);
         const response = await fetchPageRetrying(t, n++);
         for (let i = 0; response.data[i] !== undefined; i++) {
             items.push(response.data[i]);

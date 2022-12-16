@@ -1,19 +1,19 @@
 <script lang="ts">
   import { getListFromAPI, ItemType  } from "./fetchAuthors";
   getListFromAPI(ItemType.Works).then(console.log);
+
 </script>
 
 
-<main class="container">
-  <h1>Super cool search</h1>
+<main id="bookshelf">
+    <h1>Inteligentní procházení knihovnou IMSLP</h1>
 </main>
 
 <style>
-  .logo.vite:hover {
-    filter: drop-shadow(0 0 2em #747bff);
-  }
+	* {
+		box-sizing: border-box;
+	}
+	
+	/* General Structure */
 
-  .logo.svelte:hover {
-    filter: drop-shadow(0 0 2em #ff3e00);
-  }
 </style>
