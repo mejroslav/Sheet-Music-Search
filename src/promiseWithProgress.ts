@@ -73,4 +73,8 @@ export class PromiseWithProgress<T> implements Promise<T>, Readable<Progress> {
     const { subscribe } = progress;
     return Object.assign(promise, { subscribe });
   }
+
+  static fromValue<T>(value: T): PromiseWithProgress<T> {
+    return new PromiseWithProgress((res) => res(value));
+  }
 }
