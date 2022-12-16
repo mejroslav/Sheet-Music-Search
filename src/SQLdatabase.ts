@@ -70,7 +70,7 @@ export async function saveToDatabase<T extends ItemType>(
   items: Item<T>[]
 ) {
   console.log("Saving to the database...");
-  const db = _database ?? (await createDatabase());
+  const db = _database ?? (await loadOrCreateDatabase());
 
   let insert: Statement;
   let insertSuccessful = true;
