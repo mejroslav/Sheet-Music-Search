@@ -5,6 +5,10 @@
   let loadingAuthors = getList(ItemType.Authors);
 
   createDatabase().then((db) => ((window as any).db = db));
+
+  import { invoke } from "@tauri-apps/api/tauri"
+
+  invoke("get_sqlite_path").then(console.log);
 </script>
 
 <main id="bookshelf">
