@@ -1,10 +1,12 @@
 <script lang="ts">
   import { ItemType } from "./fetchFromAPI";
   import { getList } from "./fetchFromCache";
-  import { loadOrCreateDatabase } from "./SQLdatabase";
+  import { loadOrCreateDatabase, searchInDatabase } from "./SQLdatabase";
   let loadingAuthors = getList(ItemType.Authors);
 
   loadOrCreateDatabase().then((db) => ((window as any).db = db));
+
+  searchInDatabase("Beethoven", ItemType.Authors).then(console.log)
 </script>
 
 <main>
@@ -32,6 +34,7 @@
       </div>
     {/await}
   </div>
+
 </main>
 
 <style>

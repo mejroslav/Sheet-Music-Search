@@ -108,7 +108,7 @@ export async function saveToDatabase<T extends ItemType>(
       });
       insert.run();
     }
-  // Through list of Works
+    // Through list of Works
   } else {
     db.run("DELETE FROM Works");
     insert = db.prepare(
@@ -139,4 +139,13 @@ export async function saveToDatabase<T extends ItemType>(
   const path = await getPath();
   await writeBinaryFile(path, db.export());
   console.log("Written to the disk, path: ", path);
+}
+
+export async function searchInDatabase(query: string, typeOfItems: ItemType) {
+  const db = await loadOrCreateDatabase();
+
+  const table = typeOfItems === ItemType.Authors ? 'Authors' : 'Works';
+  let search = db.exec(`SELECT * FROM Authors WHERE id LIKE ` + '"%' + query + '%"')
+
+  return search;
 }
