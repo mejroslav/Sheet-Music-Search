@@ -19,6 +19,10 @@ async function getPath(): Promise<string> {
 }
 
 let _SQL: initSqlJs.SqlJsStatic | null;
+
+/**
+ * Initialize SQLite.
+ */
 export async function getSQL() {
   if (_SQL) return _SQL;
 
@@ -31,6 +35,11 @@ export async function getSQL() {
 }
 
 let _database: Database | null;
+
+/**
+ * Create new SQL database and write it into a binary file.
+ * @returns A SQL database.
+ */
 export async function createDatabase(): Promise<Database> {
   const SQL = await getSQL();
 
@@ -51,6 +60,10 @@ export async function createDatabase(): Promise<Database> {
   return (_database = db);
 }
 
+/**
+ * Load a database if exists or create a new one.
+ * @returns SQL Database.
+ */
 export async function loadOrCreateDatabase() {
   if (_database) return _database;
   const path = await getPath();
@@ -65,6 +78,11 @@ export async function loadOrCreateDatabase() {
   return await createDatabase();
 }
 
+/**
+ * Write SQL data into a binary file. (Create a new one if necessary.)
+ * @param t ItemType.Authors or ItemType.Works
+ * @param items List of authors or compositions.
+ */
 export async function saveToDatabase<T extends ItemType>(
   t: T,
   items: Item<T>[]
@@ -75,6 +93,7 @@ export async function saveToDatabase<T extends ItemType>(
   let insert: Statement;
   let insertSuccessful = true;
 
+  // Through list of Authors
   if (t === ItemType.Authors) {
     db.run("DELETE FROM Authors");
     insert = db.prepare(
@@ -89,6 +108,7 @@ export async function saveToDatabase<T extends ItemType>(
       });
       insert.run();
     }
+  // Through list of Works
   } else {
     db.run("DELETE FROM Works");
     insert = db.prepare(
@@ -109,7 +129,7 @@ export async function saveToDatabase<T extends ItemType>(
     }
   }
 
-  insert.free(); // ruční zavření databáze
+  insert.free(); // closing database
 
   if (!insertSuccessful) {
     throw new Error("nelze přidat do databáze");
