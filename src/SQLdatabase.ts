@@ -146,7 +146,7 @@ function queryResultAsObject(result: QueryExecResult): any[] {
   for (const row of result.values) {
     let obj: Record<any, any> = {};
     for (const [i, col] of result.columns.entries()) {
-      obj[col] = result.values[i];
+      obj[col] = row[i];
     }
     objs.push(obj);
   }
