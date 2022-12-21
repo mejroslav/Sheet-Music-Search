@@ -1,4 +1,4 @@
-import initSqlJs, { type Database, type Statement } from "sql.js";
+import initSqlJs, { type Database, type QueryExecResult, type Statement } from "sql.js";
 import { ItemType, type Author, type Item, type Work } from "./fetchFromAPI";
 import { invoke } from "@tauri-apps/api/tauri";
 import { createDir, exists, readBinaryFile, writeBinaryFile } from "@tauri-apps/api/fs";
@@ -141,11 +141,28 @@ export async function saveToDatabase<T extends ItemType>(
   console.log("Written to the disk, path: ", path);
 }
 
-export async function searchInDatabase(query: string, typeOfItems: ItemType) {
+function queryResultAsObject(result: QueryExecResult): any[] {
+  const objs: Record<any, any>[] = [];
+  for (const row of result.values) {
+    let obj: Record<any, any> = {};
+    for (const [i, col] of result.columns.entries()) {
+      obj[col] = result.values[i];
+    }
+    objs.push(obj);
+  }
+
+  return objs;
+}
+
+export function searchInDatabase(query: string, typeOfItems: ItemType.Authors): Promise<Author[]>;
+export function searchInDatabase(query: string, typeOfItems: ItemType.Works): Promise<Work[]>;
+export async function searchInDatabase(query: string, typeOfItems: ItemType): Promise<Author[] | Work[]> {
   const db = await loadOrCreateDatabase();
 
-  const table = typeOfItems === ItemType.Authors ? 'Authors' : 'Works';
-  let search = db.exec(`SELECT * FROM Authors WHERE id LIKE ` + '"%' + query + '%"')
+  const escapedQuery = query.replaceAll(`'`, `''`);
 
-  return search;
+  const table = typeOfItems === ItemType.Authors ? 'Authors' : 'Works';
+  let search = db.exec(`SELECT * FROM ${table} WHERE id LIKE '%${escapedQuery}%'`)[0];
+
+  return queryResultAsObject(search);
 }
