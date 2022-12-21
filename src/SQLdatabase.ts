@@ -120,10 +120,10 @@ export async function saveToDatabase<T extends ItemType>(
         $type: work.type,
         $parent: work.parent,
         $permlink: work.permlink,
-        $composer: work.intvals.composer,
-        $worktitle: work.intvals.worktitle,
-        $icatno: work.intvals.icatno,
-        $pagid: work.intvals.pageid,
+        $composer: work.composer,
+        $worktitle: work.worktitle,
+        $icatno: work.icatno,
+        $pagid: work.pageid,
       });
       insert.run();
     }

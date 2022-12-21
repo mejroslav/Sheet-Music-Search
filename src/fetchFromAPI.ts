@@ -10,11 +10,10 @@ export interface Author {
   id: string;
   type: "1";
   parent: string;
-  intvals: [];
   permlink: string;
 }
 
-export interface Work {
+interface WorkWithIntvals {
   id: string;
   type: "2";
   parent: string;
@@ -27,10 +26,27 @@ export interface Work {
   permlink: string;
 }
 
+export interface Work {
+  id: string;
+  type: "2";
+  parent: string;
+  composer: string;
+  worktitle: string;
+  icatno: string;
+  pageid: string;
+  permlink: string;
+}
+
 export type Item<T extends ItemType> = T extends ItemType.Authors
   ? Author
   : T extends ItemType.Works
   ? Work
+  : never;
+
+export type UnresolvedItem<T extends ItemType> = T extends ItemType.Authors
+  ? Author
+  : T extends ItemType.Works
+  ? WorkWithIntvals
   : never;
 
 interface Metadata {
@@ -43,7 +59,7 @@ interface Metadata {
   apiversion: number;
 }
 
-type Result<T extends ItemType> = Record<number, Item<T>> & {
+type Result<T extends ItemType> = Record<number, UnresolvedItem<T>> & {
   metadata: Metadata;
 };
 
@@ -77,6 +93,18 @@ async function fetchPageRetrying<T extends ItemType>(
 
 const delay = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
+function flattenWork(w: WorkWithIntvals): Work {
+  return {
+    ...w,
+    ...w.intvals,
+  };
+}
+
+function resolveItem<T extends ItemType>(t: T, item: UnresolvedItem<T>): Item<T> {
+  if (t === ItemType.Authors) return item as Author as Item<T>;
+  return flattenWork(item as WorkWithIntvals) as Item<T>;
+}
+
 export function getListFromAPI<T extends ItemType>(t: T) {
   return new PromiseWithProgress<Item<T>[]>(async (res, { setRatio }) => {
     let items: Item<T>[] = [];
@@ -89,7 +117,8 @@ export function getListFromAPI<T extends ItemType>(t: T) {
 
       const response = await fetchPageRetrying(t, n++);
       for (let i = 0; response.data[i] !== undefined; i++) {
-        items.push(response.data[i]);
+        const item = response.data[i];
+        items.push(resolveItem(t, item));
       }
       if (!response.data.metadata.moreresultsavailable) break;
     }
