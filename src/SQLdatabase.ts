@@ -162,7 +162,7 @@ export async function searchInDatabase(query: string, typeOfItems: ItemType): Pr
   const escapedQuery = query.replaceAll(`'`, `''`);
 
   const table = typeOfItems === ItemType.Authors ? 'Authors' : 'Works';
-  let search = db.exec(`SELECT TOP 10 FROM ${table} WHERE id LIKE '%${escapedQuery}%'`)[0];
+  let search = db.exec(`SELECT FROM ${table} WHERE id LIKE '%${escapedQuery}%' ORDER BY id LIMIT 10`)[0];
 
   return queryResultAsObject(search);
 }
