@@ -1,6 +1,7 @@
 <script lang="ts">
   import { ItemType } from "./fetchFromAPI";
   import { getList } from "./fetchFromCache";
+  import Searchbar from "./Searchbar.svelte";
   import { loadOrCreateDatabase, searchInDatabase } from "./SQLdatabase";
   let loadingAuthors = getList(ItemType.Authors);
 
@@ -35,6 +36,7 @@
     {/await}
   </div>
 
+  <Searchbar/>
 </main>
 
 <style>
