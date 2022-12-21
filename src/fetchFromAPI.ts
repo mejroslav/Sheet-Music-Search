@@ -100,9 +100,23 @@ function flattenWork(w: WorkWithIntvals): Work {
   };
 }
 
-function resolveItem<T extends ItemType>(t: T, item: UnresolvedItem<T>): Item<T> {
+function flattenItem<T extends ItemType>(t: T, item: UnresolvedItem<T>): Item<T> {
   if (t === ItemType.Authors) return item as Author as Item<T>;
   return flattenWork(item as WorkWithIntvals) as Item<T>;
+}
+
+function removeStartOfString(pattern: string, str: string): string {
+  if (str.startsWith(pattern)) return str.substring(pattern.length);
+  return str;
+}
+
+function resolveItem<T extends ItemType>(t: T, unresolvedItem: UnresolvedItem<T>): Item<T> {
+  const item = flattenItem(t, unresolvedItem);
+
+  return {
+    ...item,
+    id: removeStartOfString('Category:', item.id)
+  }
 }
 
 export function getListFromAPI<T extends ItemType>(t: T) {
