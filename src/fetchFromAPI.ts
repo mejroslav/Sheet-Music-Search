@@ -115,7 +115,8 @@ function resolveItem<T extends ItemType>(t: T, unresolvedItem: UnresolvedItem<T>
 
   return {
     ...item,
-    id: removeStartOfString('Category:', item.id)
+    id: removeStartOfString('Category:', item.id),
+    parent: item.parent ? removeStartOfString('Category:', item.parent) : undefined
   }
 }
 
