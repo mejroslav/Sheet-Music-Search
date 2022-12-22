@@ -22,6 +22,22 @@ export class Progress {
   get percent(): number {
     return this.value * 100;
   }
+
+  static combined(...weightsAndProgresses: [number, Progress][]) {
+    const weightsAndValues = weightsAndProgresses.map(([w, p]) => [w, p.value]);
+
+    // infinite weights beat everything else
+    const infiniteWeights = weightsAndValues.filter(([w, _]) => w === Infinity);
+    if (infiniteWeights.length > 0) {
+      const sum = infiniteWeights.reduce((s, [_, v]) => s + v, 0);
+      return new Progress(sum / infiniteWeights.length);
+    }
+
+    const totalValue = weightsAndValues.reduce((s, [w, v]) => s + w * v, 0);
+    const totalWeight = weightsAndValues.reduce((s, [w, _]) => s + w, 0);
+
+    return new Progress(totalValue / totalWeight);
+  }
 }
 
 interface ProgressUpdater {
@@ -71,7 +87,17 @@ export class PromiseWithProgress<T> implements Promise<T>, Readable<Progress> {
     });
 
     const { subscribe } = progress;
-    return Object.assign(promise, { subscribe });
+    const { tap, thenDo } = this;
+    return Object.assign(promise, { subscribe, tap, thenDo });
+  }
+
+  tap(listener: (value: T) => void): this {
+    this.then(listener);
+    return this;
+  }
+
+  thenDo<S>(weight: number, onresolved: (value: T) => PromiseWithProgress<S>): PromiseWithProgress<S> {
+    throw new Error("Not implemented yet"); // TODO
   }
 
   static fromValue<T>(value: T): PromiseWithProgress<T> {
