@@ -1,4 +1,4 @@
-import { writable, type Readable } from "svelte/store";
+import { derived, writable, type Readable } from "svelte/store";
 
 const clamp = (lowerBound: number, n: number, upperBound: number) =>
   Math.max(lowerBound, Math.min(n, upperBound));
@@ -96,11 +96,45 @@ export class PromiseWithProgress<T> implements Promise<T>, Readable<Progress> {
     return this;
   }
 
-  thenDo<S>(weight: number, onresolved: (value: T) => PromiseWithProgress<S>): PromiseWithProgress<S> {
+  thenDo<S>(
+    weight: number,
+    onresolved: (value: T) => PromiseWithProgress<S>
+  ): PromiseWithProgress<S> {
     throw new Error("Not implemented yet"); // TODO
   }
 
   static fromValue<T>(value: T): PromiseWithProgress<T> {
     return new PromiseWithProgress((res) => res(value));
+  }
+
+  static fromPromiseAndProgress<T>(
+    promise: Promise<T>,
+    progress: Readable<Progress>
+  ): PromiseWithProgress<T> {
+    return new PromiseWithProgress((res, { setRatio }, rej) => {
+      progress.subscribe(({ ratio }) => setRatio(ratio));
+      promise.then(res);
+      promise.catch(rej);
+    });
+  }
+
+  static all<T>(
+    ...weightsAndPromises: readonly [number, PromiseWithProgress<T>][]
+  ): PromiseWithProgress<T[]> {
+    const ps = weightsAndPromises.map(([_, p]) => p);
+    const ws = weightsAndPromises.map(([w, _]) => w);
+
+    const recombine = (vs: Progress[]): [number, Progress][] =>
+      vs.map((v, i) => [ws[i], v]);
+
+    const combinedPromise = Promise.all(ps);
+    const combinedProgress = derived(ps, (vs) =>
+      Progress.combined(...recombine(vs))
+    );
+
+    return PromiseWithProgress.fromPromiseAndProgress(
+      combinedPromise,
+      combinedProgress
+    );
   }
 }

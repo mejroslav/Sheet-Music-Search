@@ -2,8 +2,8 @@ import { Response, fetch, ResponseType } from "@tauri-apps/api/http";
 import { Progress, PromiseWithProgress } from "./promiseWithProgress";
 
 // TODO scrape this from the IMSLP main page
-export const NUMBER_OF_AUTHORS = 45_000;
-export const NUMBER_OF_WORKS = 220_000;
+export const NUMBER_OF_AUTHOR_PAGES = 45;
+export const NUMBER_OF_WORK_PAGES = 220;
 
 export enum ItemType {
   Authors = 1,
@@ -137,10 +137,11 @@ export function getListFromAPI<T extends ItemType>(t: T) {
     let items: Item<T>[] = [];
 
     let n = 0;
-    let numOfPages = t === ItemType.Works ? NUMBER_OF_WORKS : NUMBER_OF_AUTHORS;
+    let numOfPages = t === ItemType.Works ? NUMBER_OF_WORK_PAGES : NUMBER_OF_AUTHOR_PAGES;
 
     while (true) {
       setRatio(n / numOfPages);
+      console.log('Fetching ', ItemType[t], `${n}/${numOfPages}`)
 
       const response = await fetchPageRetrying(t, n++);
       for (let i = 0; response.data[i] !== undefined; i++) {

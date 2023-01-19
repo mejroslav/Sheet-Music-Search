@@ -6,8 +6,8 @@ import initSqlJs, {
 import {
   getListFromAPI,
   ItemType,
-  NUMBER_OF_AUTHORS,
-  NUMBER_OF_WORKS,
+  NUMBER_OF_AUTHOR_PAGES,
+  NUMBER_OF_WORK_PAGES,
   type Author,
   type Item,
   type Work,
@@ -103,24 +103,29 @@ export async function loadOrCreateDatabase() {
 export async function isDatabasePopulated(): Promise<boolean> {
   const db = await loadOrCreateDatabase();
   return (
-    db.exec("SELECT * FROM Authors LIMIT 1")[0].values.length > 0 &&
-    db.exec("SELECT * FROM Works LIMIT 1")[0].values.length > 0
+    (db.exec("SELECT * FROM Authors LIMIT 1")?.[0]?.values?.length ?? -1) > 0 &&
+    (db.exec("SELECT * FROM Works LIMIT 1")?.[0]?.values?.length ?? -1) > 0
   );
 }
 
 export function populateDatabase(): PromiseWithProgress<void> {
-  return new PromiseWithProgress(async (res, update, rej) => {
+  return new PromiseWithProgress(async (res, { setRatio }, rej) => {
+    // if we already have data, return
     if (await isDatabasePopulated()) return res();
 
+    // else initiate scraping
     const authors = getListFromAPI(ItemType.Authors);
     const works = getListFromAPI(ItemType.Works);
 
-    // const p = Progress.combined(
-    //   [NUMBER_OF_AUTHORS, authors],
-    //   [NUMBER_OF_WORKS, works]
-    // );
+    // mirror the progress
+    const p = PromiseWithProgress.all<unknown>([NUMBER_OF_AUTHOR_PAGES, authors], [NUMBER_OF_WORK_PAGES, works]);
+    p.subscribe(({ ratio }) => setRatio(ratio));
+    p.then(() => res());
+    p.catch(rej);
 
-    Promise.all([authors, works]).then(() => res());
+    // save the results to database
+    authors.then(r => saveToDatabase(ItemType.Authors, r));
+    works.then(r => saveToDatabase(ItemType.Works, r));
   });
 }
 
