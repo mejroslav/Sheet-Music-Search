@@ -1,6 +1,10 @@
 import { Response, fetch, ResponseType } from "@tauri-apps/api/http";
 import { Progress, PromiseWithProgress } from "./promiseWithProgress";
 
+// TODO scrape this from the IMSLP main page
+export const NUMBER_OF_AUTHORS = 45_000;
+export const NUMBER_OF_WORKS = 220_000;
+
 export enum ItemType {
   Authors = 1,
   Works = 2,
@@ -100,7 +104,10 @@ function flattenWork(w: WorkWithIntvals): Work {
   };
 }
 
-function flattenItem<T extends ItemType>(t: T, item: UnresolvedItem<T>): Item<T> {
+function flattenItem<T extends ItemType>(
+  t: T,
+  item: UnresolvedItem<T>
+): Item<T> {
   if (t === ItemType.Authors) return item as Author as Item<T>;
   return flattenWork(item as WorkWithIntvals) as Item<T>;
 }
@@ -110,14 +117,19 @@ function removeStartOfString(pattern: string, str: string): string {
   return str;
 }
 
-function resolveItem<T extends ItemType>(t: T, unresolvedItem: UnresolvedItem<T>): Item<T> {
+function resolveItem<T extends ItemType>(
+  t: T,
+  unresolvedItem: UnresolvedItem<T>
+): Item<T> {
   const item = flattenItem(t, unresolvedItem);
 
   return {
     ...item,
-    id: removeStartOfString('Category:', item.id),
-    parent: item.parent ? removeStartOfString('Category:', item.parent) : undefined
-  }
+    id: removeStartOfString("Category:", item.id),
+    parent: item.parent
+      ? removeStartOfString("Category:", item.parent)
+      : undefined,
+  };
 }
 
 export function getListFromAPI<T extends ItemType>(t: T) {
@@ -125,7 +137,7 @@ export function getListFromAPI<T extends ItemType>(t: T) {
     let items: Item<T>[] = [];
 
     let n = 0;
-    let numOfPages = t === ItemType.Works ? 220 : 45; // počet stránek ve vyhledávání všech děl, resp. autorů
+    let numOfPages = t === ItemType.Works ? NUMBER_OF_WORKS : NUMBER_OF_AUTHORS;
 
     while (true) {
       setRatio(n / numOfPages);

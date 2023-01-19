@@ -1,13 +1,11 @@
 <script lang="ts">
   import { ItemType } from "./fetchFromAPI";
-  import { getList } from "./fetchFromCache";
   import Searchbar from "./Searchbar.svelte";
-  import { loadOrCreateDatabase, searchInDatabase } from "./SQLdatabase";
-  let loadingAuthors = getList(ItemType.Authors);
+  import { loadOrCreateDatabase, populateDatabase, searchInDatabase } from "./SQLdatabase";
+  let loading = populateDatabase();
 
+  // for funsies and debugging
   loadOrCreateDatabase().then((db) => ((window as any).db = db));
-
-  searchInDatabase("Beethoven", ItemType.Authors).then(console.log)
 </script>
 
 <main>
@@ -16,19 +14,14 @@
   </div> 
   
   <div class="progress-info">
-    {#await loadingAuthors}
+    {#await loading}
       <div class="loading">
-        <p><strong>Loading: {$loadingAuthors.percent.toFixed(0)} %</strong></p>
+        <p><strong>Loading: {$loading.percent.toFixed(0)} %</strong></p>
       </div>
     {:then listOfWorks}
       <div class="success">
         <p><strong>Success!</strong></p>
       </div>
-      <ul class="w3-ul w3-hoverable">
-        <li>{JSON.stringify(listOfWorks[0])}</li>
-        <li>{JSON.stringify(listOfWorks[1])}</li>
-        <li>{JSON.stringify(listOfWorks[2])}</li>
-      </ul>
     {:catch error}
       <div class="error">
         <p><strong>Error!</strong></p>

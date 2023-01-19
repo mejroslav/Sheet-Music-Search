@@ -1,7 +1,25 @@
-import initSqlJs, { type Database, type QueryExecResult, type Statement } from "sql.js";
-import { ItemType, type Author, type Item, type Work } from "./fetchFromAPI";
+import initSqlJs, {
+  type Database,
+  type QueryExecResult,
+  type Statement,
+} from "sql.js";
+import {
+  getListFromAPI,
+  ItemType,
+  NUMBER_OF_AUTHORS,
+  NUMBER_OF_WORKS,
+  type Author,
+  type Item,
+  type Work,
+} from "./fetchFromAPI";
 import { invoke } from "@tauri-apps/api/tauri";
-import { createDir, exists, readBinaryFile, writeBinaryFile } from "@tauri-apps/api/fs";
+import {
+  createDir,
+  exists,
+  readBinaryFile,
+  writeBinaryFile,
+} from "@tauri-apps/api/fs";
+import { Progress, PromiseWithProgress } from "./promiseWithProgress";
 
 const dirname = (path: string) => path.substring(0, path.lastIndexOf("/"));
 
@@ -69,13 +87,41 @@ export async function loadOrCreateDatabase() {
   const path = await getPath();
 
   if (await exists(path)) {
-    console.log("Database exists! Attempting to load it...")
+    console.log("Database exists! Attempting to load it...");
     const blob = await readBinaryFile(path);
     const SQL = await getSQL();
     return (_database = new SQL.Database(blob));
   }
 
   return await createDatabase();
+}
+
+/**
+ * Checks whether the database
+ * @returns
+ */
+export async function isDatabasePopulated(): Promise<boolean> {
+  const db = await loadOrCreateDatabase();
+  return (
+    db.exec("SELECT * FROM Authors LIMIT 1")[0].values.length > 0 &&
+    db.exec("SELECT * FROM Works LIMIT 1")[0].values.length > 0
+  );
+}
+
+export function populateDatabase(): PromiseWithProgress<void> {
+  return new PromiseWithProgress(async (res, update, rej) => {
+    if (await isDatabasePopulated()) return res();
+
+    const authors = getListFromAPI(ItemType.Authors);
+    const works = getListFromAPI(ItemType.Works);
+
+    // const p = Progress.combined(
+    //   [NUMBER_OF_AUTHORS, authors],
+    //   [NUMBER_OF_WORKS, works]
+    // );
+
+    Promise.all([authors, works]).then(() => res());
+  });
 }
 
 /**
@@ -154,15 +200,26 @@ function queryResultAsObject(result: QueryExecResult): any[] {
   return objs;
 }
 
-export function searchInDatabase(query: string, typeOfItems: ItemType.Authors): Promise<Author[]>;
-export function searchInDatabase(query: string, typeOfItems: ItemType.Works): Promise<Work[]>;
-export async function searchInDatabase(query: string, typeOfItems: ItemType): Promise<Author[] | Work[]> {
+export function searchInDatabase(
+  query: string,
+  typeOfItems: ItemType.Authors
+): Promise<Author[]>;
+export function searchInDatabase(
+  query: string,
+  typeOfItems: ItemType.Works
+): Promise<Work[]>;
+export async function searchInDatabase(
+  query: string,
+  typeOfItems: ItemType
+): Promise<Author[] | Work[]> {
   const db = await loadOrCreateDatabase();
 
   const escapedQuery = query.replaceAll(`'`, `''`);
 
-  const table = typeOfItems === ItemType.Authors ? 'Authors' : 'Works';
-  let search = db.exec(`SELECT * FROM ${table} WHERE id LIKE '%${escapedQuery}%' ORDER BY id LIMIT 10`)[0];
+  const table = typeOfItems === ItemType.Authors ? "Authors" : "Works";
+  let search = db.exec(
+    `SELECT * FROM ${table} WHERE id LIKE '%${escapedQuery}%' ORDER BY id LIMIT 10`
+  )[0];
 
   return queryResultAsObject(search);
 }
