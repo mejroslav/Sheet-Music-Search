@@ -21,21 +21,26 @@
     <p>Loading</p>
   {:then results}
     <div class="result-cards">
-      <div class="card">
-        {#each results ?? [] as result}
+      {#each results ?? [] as result}
+        <div class="card">
           <div class="card-header">
             {result.id}
           </div>
           <div class="card-body">
-            {result.permlink}
+            <a href={result.permlink}>{result.permlink}</a>
           </div>
-        {/each}
-      </div>
+        </div>
+      {/each}
     </div>
   {/await}
 </div>
 
 <style>
+  :root {
+    --card-border-color: hsl(0, 0%, 50%);
+    --card-color: hsl(0, 0%, 20%);
+  }
+
   .search-wrapper {
     display: flex;
     flex-direction: column;
@@ -48,18 +53,18 @@
     border: none;
     margin-top: 8px;
     margin-left: 10px;
-    font-size: 17px;
+    font-size: 1rem;
   }
 
   .result-cards {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    gap: 0.25rem;
+    grid-template-columns: repeat(auto-fill, minmax(500px, 1fr));
+    gap: 1rem;
     margin-top: 1rem;
   }
   .card {
-    border: 1px solid black;
-    background-color: white;
+    border: 1px solid var(--card-border-color);
+    background-color: var(--card-color);
     padding: 0.5rem;
   }
 

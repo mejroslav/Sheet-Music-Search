@@ -32,12 +32,6 @@
 </main>
 
 <style>
-  * {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-  }
-
   .loading {
     background-color: hsl(207, 90%, 54%);
     border-left: 6px solid hsl(229, 77%, 49%);
