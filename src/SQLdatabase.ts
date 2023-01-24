@@ -228,3 +228,12 @@ export async function searchInDatabase(
 
   return queryResultAsObject(search);
 }
+
+export async function findWorksFromAuthor(authorName: string) {
+  const db = await loadOrCreateDatabase();
+  let search = db.exec(
+    `SELECT * FROM Works WHERE composer = '${authorName}' ORDER BY id`
+  );
+
+  return search.map(queryResultAsObject);
+}
