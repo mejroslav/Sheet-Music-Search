@@ -1,5 +1,6 @@
 <script lang="ts">
-  import type { Author } from "./fetchFromAPI";
+  import AuthorPage from "./AuthorPage.svelte";
+import type { Author } from "./fetchFromAPI";
   import Searchbar from "./Searchbar.svelte";
   import { loadOrCreateDatabase, populateDatabase, searchInDatabase } from "./SQLdatabase";
   let author: Author | undefined;
@@ -36,7 +37,7 @@
   <Searchbar on:authorClicked={(e) => author = e.detail} />
 
   {:else}
-    Vybrán autor {author.id}. Gratuluju teda.
+    <AuthorPage {author}/>
   {/if}
 </main>
 

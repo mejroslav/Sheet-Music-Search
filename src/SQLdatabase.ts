@@ -233,6 +233,10 @@ export function searchInDatabase(
 export async function searchInDatabase(
   query: string,
   typeOfItems: ItemType
+): Promise<Author[] | Work[]>;
+export async function searchInDatabase(
+  query: string,
+  typeOfItems: ItemType
 ): Promise<Author[] | Work[]> {
   const db = await loadOrCreateDatabase();
 
