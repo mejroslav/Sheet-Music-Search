@@ -151,10 +151,16 @@ export async function saveToDatabase<T extends ItemType>(
       "INSERT INTO Authors VALUES ($id, $type, $parent, $permlink);"
     );
     for (const author of items as Author[]) {
-      insertSuccessful &&= insert.bind({
+      console.log(author, {
         $id: author.id,
         $type: author.type,
         $parent: author.parent,
+        $permlink: author.permlink,
+      });
+      insertSuccessful &&= insert.bind({
+        $id: author.id,
+        $type: author.type,
+        $parent: author.parent ?? "",
         $permlink: author.permlink,
       });
       insert.run();
@@ -179,7 +185,7 @@ export async function saveToDatabase<T extends ItemType>(
       insertSuccessful &&= insert.bind({
         $id: work.id,
         $type: work.type,
-        $parent: work.parent,
+        $parent: work.parent ?? "",
         $permlink: work.permlink,
         $composer: work.composer,
         $worktitle: work.worktitle,

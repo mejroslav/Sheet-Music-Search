@@ -13,14 +13,14 @@ export enum ItemType {
 export interface Author {
   id: string;
   type: "1";
-  parent: string;
+  parent?: string;
   permlink: string;
 }
 
 interface WorkWithIntvals {
   id: string;
   type: "2";
-  parent: string;
+  parent?: string;
   intvals: {
     composer: string;
     worktitle: string;
@@ -33,7 +33,7 @@ interface WorkWithIntvals {
 export interface Work {
   id: string;
   type: "2";
-  parent: string;
+  parent?: string;
   composer: string;
   worktitle: string;
   icatno: string;
