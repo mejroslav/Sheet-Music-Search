@@ -13,7 +13,8 @@
   "dependencies": {
     "@tauri-apps/api": "^1.2.0",
     "@types/sql.js": "^1.4.4",
-    "sql.js": "^1.8.0"
+    "sql.js": "^1.8.0",
+    "tauri": "^0.14.1"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^2.0.0",
