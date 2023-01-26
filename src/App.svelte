@@ -1,6 +1,9 @@
 <script lang="ts">
+  import type { Author } from "./fetchFromAPI";
   import Searchbar from "./Searchbar.svelte";
   import { loadOrCreateDatabase, populateDatabase, searchInDatabase } from "./SQLdatabase";
+  let author: Author | undefined;
+
   let loading = populateDatabase();
 
   // for funsies and debugging
@@ -11,6 +14,8 @@
   <div class="w3-container primary-color">
     <h1>Inteligentní procházení knihovnou IMSLP</h1>
   </div> 
+
+  {#if author === undefined}
   
   <div class="progress-info">
     {#await loading}
@@ -28,7 +33,11 @@
     {/await}
   </div>
 
-  <Searchbar />
+  <Searchbar on:authorClicked={(e) => author = e.detail} />
+
+  {:else}
+    Vybrán autor {author.id}. Gratuluju teda.
+  {/if}
 </main>
 
 <style>

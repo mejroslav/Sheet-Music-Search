@@ -166,6 +166,16 @@ export async function saveToDatabase<T extends ItemType>(
       "INSERT INTO Works VALUES ($id, $type, $parent, $permlink, $composer, $worktitle, $icatno, $pageid);"
     );
     for (const work of items as Work[]) {
+      console.log(work, {
+        $id: work.id,
+        $type: work.type,
+        $parent: work.parent,
+        $permlink: work.permlink,
+        $composer: work.composer,
+        $worktitle: work.worktitle,
+        $icatno: work.icatno,
+        $pagid: work.pageid,
+      });
       insertSuccessful &&= insert.bind({
         $id: work.id,
         $type: work.type,
@@ -193,6 +203,7 @@ export async function saveToDatabase<T extends ItemType>(
 }
 
 function queryResultAsObject(result: QueryExecResult): any[] {
+  if (result === undefined) return [];
   const objs: Record<any, any>[] = [];
   for (const row of result.values) {
     let obj: Record<any, any> = {};

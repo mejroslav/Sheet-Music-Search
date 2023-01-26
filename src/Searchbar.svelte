@@ -1,6 +1,12 @@
 <script lang="ts">
-  import { ItemType } from "./fetchFromAPI";
+  import { createEventDispatcher } from "svelte";
+  import { ItemType, type Author } from "./fetchFromAPI";
   import { searchInDatabase } from "./SQLdatabase";
+
+  interface $$Events {
+    authorClicked: CustomEvent<Author>
+  }
+  const dispatch = createEventDispatcher();
 
   let inputValue: string | undefined;
   $: loadingResults = inputValue
@@ -22,7 +28,7 @@
   {:then results}
     <div class="result-cards">
       {#each results ?? [] as result}
-        <div class="card">
+        <div class="card" on:click={() => dispatch("authorClicked", result)} on:keypress>
           <div class="card-header">
             {result.id}
           </div>
